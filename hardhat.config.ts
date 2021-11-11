@@ -10,11 +10,11 @@ import "@nomiclabs/hardhat-waffle"
 // https://hardhat.org/hardhat-network/
 // https://hardhat.org/guides/mainnet-forking.html
 const FORK_FUJI = false
-const FORK_MAINNET = false
+const FORK_MAINNET = true
 const forkingData = FORK_FUJI ? {
-  url: 'https://api.avax-test.network/ext/bc/C/rpc',
+  url: 'https://api.avax-test.network/ext/bc/C/rpc', enabled: true,
 } : FORK_MAINNET ? {
-  url: 'https://api.avax.network/ext/bc/C/rpc'
+  url: 'https://api.avax.network/ext/bc/C/rpc', enabled: true,
 } : undefined
 
 task("accounts", "Prints the list of accounts", async (args, hre): Promise<void> => {
@@ -35,6 +35,7 @@ task("balances", "Prints the list of AVAX account balances", async (args, hre): 
 })
 
 export default {
+  defaultNetwork: "hardhat",
   solidity: {
     compilers: [
       {
@@ -57,7 +58,7 @@ export default {
   networks: {
     hardhat: {
       gasPrice: 225000000000,
-      chainId: !forkingData ? 43112 : undefined, //Only specify a chainId if we are not forking
+      chainId: 43114,
       forking: forkingData
     },
     local: {

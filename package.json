@@ -1,5 +1,5 @@
 {
-  "name": "avalanche-smart-contract-quickstart",
+  "name": "avax-aave",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
@@ -45,6 +45,10 @@
     "fund-cchain-addresses": "npx hardhat run scripts/fund-cchain-addresses.js"
   },
   "dependencies": {
+    "@aave/protocol-v2": "^1.0.1",
+    "better-sqlite3": "^7.4.4",
+    "bignumber.js": "^9.0.1",
+    "dotenv": "^10.0.0",
     "typescript": "^4.3.5"
   },
   "engines": {

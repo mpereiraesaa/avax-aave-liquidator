@@ -1,0 +1,96 @@
+get all tokens available
+
+LendingPool ABI file
+
+Need to get the available reserves
+
+And available tokens: https://api.blizz.finance/api/getApys?v=avalanche
+  .data.apyDetails[...underlyingAsset]
+OR
+
+await LendingPoolContract.getReservesList() // return asset addresses
+await LendingPoolContract.getReserveData(asset_address)
+
+await LendingPoolContract.getUserConfiguration(address user)
+
+_reservesCount == Reserves LENGTH
+
+configuration: [
+  BigNumber { _hex: '0x138805122af819641388', _isBigNumber: true }
+],
+liquidityIndex: BigNumber { _hex: '0x033ba73aba863f18aac1c89e', _isBigNumber: true },
+variableBorrowIndex: BigNumber { _hex: '0x033cabb900ef20f745065f17', _isBigNumber: true },
+currentLiquidityRate: BigNumber { _hex: '0xb80b1e38375b80d08b1856', _isBigNumber: true },
+currentVariableBorrowRate: BigNumber { _hex: '0x027c8d9a698ed3d60fe47117', _isBigNumber: true },
+currentStableBorrowRate: BigNumber { _hex: '0x295be96e64066972000000', _isBigNumber: true },
+lastUpdateTimestamp: 1636421644,
+aTokenAddress: '0xB2AC04b71888E17Aa2c5102cf3d0215467D74100',
+stableDebtTokenAddress: '0x212f806AEAd6d1Fd1cB7ac07F82033E096fAf4B3',
+variableDebtTokenAddress: '0x85dB3E9D6b12fB8140D202A5695a04b5C4c863Cd',
+interestRateStrategyAddress: '0xF64A042DdCa0792d9E147F309108d4bf2C844395',
+id: 5
+
+vars.currentReserveAddress is from the RESERVES list.
+
+# This is to get PRICE
+vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
+
+getAddressesProvider() get AddressesProvider address
+
+# Get ORACLE
+[LendingPoolAddressesProvider].getPriceOracle()
+
+aToken (Deposits/Collateral)
+
+debtToken (Borrow/Repay)
+
+isBorrowing is True whenever Asset Borrowed Balance is not ZERO
+isCollateral is True whenever deposit was called but if Withdraw was called then is False
+
+We work with reserves and every reserve has aToken, stableDebtTokenAddress, variableDebtTokenAddress
+
+Tablas:
+
+reserves [index, token_address]
+reserve_details [token_index, atoken_address, stable_debt_token_address, variable_debt_token_address, ltv, liquidationThreshold, decimals]
+
+fetch all reserve details x3 listen on three address (collateral and debt1, debt2)
+
+reserve_info token_address, is_debt_token
+
+
+
+BALANCES table for every token: (balance, user)
+
+TRANSFER table just like already is.
+
+if these entries exists and have a NOT zero Value then we say isUsingAsCollateralOrBorrowing is True.
+
+is borrowing is true if balance of debt_token is not ZERO.
+
+aToken => 
+  balanceOf(user).rayMul(_pool.getReserveNormalizedIncome(_underlyingAsset))
+
+stableDebtToken => stableRates last update current
+    uint256 accountBalance = super.balanceOf(account);
+    uint256 stableRate = _usersStableRate[account];
+    if (accountBalance == 0) {
+      return 0;
+    }
+    uint256 cumulatedInterest =
+      MathUtils.calculateCompoundedInterest(stableRate, _timestamps[account]);
+    return accountBalance.rayMul(cumulatedInterest);
+
+variableDebtToken => variable rate per reserve 
+  scaledBalance.rayMul(_pool.getReserveNormalizedVariableDebt(_underlyingAsset));
+
+
+Retrieve balances retrieve 
+
+the type of borrow debt.
+Stable: 1, Variable: 2 
+
+if interest_rate_mode = 0 then its income balance, 1 then stable debt algo, 2 then variable debt mechanism.
+
+
+
