@@ -3,7 +3,7 @@ const { hexlify, hexStripZeros } = ethers.utils;
 const { abi: StableDebtTokenABI } = require('@aave/protocol-v2/artifacts/contracts/protocol/tokenization/StableDebtToken.sol/StableDebtToken.json');
 const { getDBConnection, GET_STABLE_DEBT_TOKENS, waitForTransactions } = require('../utils');
 
-const provider = new ethers.providers.JsonRpcProvider("https://api.avax.network/ext/bc/C/rpc");
+const provider = new ethers.providers.JsonRpcProvider(configuration.url);
 
 const iface = new ethers.utils.Interface(StableDebtTokenABI);
 

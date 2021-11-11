@@ -5,7 +5,7 @@ const addresses = require('./addresses/avax.json');
 const { getDBConnection } = require('./utils');
 const createTables = require('./createTables');
 
-const provider = new ethers.providers.JsonRpcProvider("https://api.avax.network/ext/bc/C/rpc");
+const provider = new ethers.providers.JsonRpcProvider(configuration.url);
 
 async function run() {
   await createTables();

@@ -2,7 +2,7 @@ const ethers = require('ethers');
 const { hexlify, hexStripZeros } = ethers.utils;
 const { getDBConnection, GET_TOKENS, waitForTransactions } = require('../utils');
 
-const provider = new ethers.providers.JsonRpcProvider("https://api.avax.network/ext/bc/C/rpc");
+const provider = new ethers.providers.JsonRpcProvider(configuration.url);
 
 const iface = new ethers.utils.Interface([
   "event Transfer(address indexed src, address indexed dst, uint wad)"
