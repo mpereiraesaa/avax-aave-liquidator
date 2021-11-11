@@ -1,5 +1,7 @@
 const ethers = require('ethers');
 const { getDBConnection } = require('../utils');
+const { syncTransfers } = require('./syncTransfers');
+const { syncDebt } = require('./syncDebt');
 
 const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
@@ -42,7 +44,8 @@ async function syncState(iterations = 1) {
 
       try {
         await Promise.all([
-          // synchronizeAccounts(fromBlock, toBlock),
+          syncTransfers(fromBlock, toBlock),
+          syncDebt(fromBlock, toBlock),
         ]);
 
         fromBlock = toBlock;

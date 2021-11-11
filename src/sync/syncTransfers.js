@@ -17,10 +17,10 @@ const syncTransfers = async (
   const db = getDBConnection();
 
   const tokens = db.prepare(GET_TOKENS).all();
-  const cTokenAddresses = tokens.map((token) => token.token);
+  const tokenAddresses = tokens.map((token) => token.token);
 
   const pastEvents = await provider.send('eth_getLogs', [{
-    address: cTokenAddresses,
+    address: tokenAddresses,
     fromBlock: hexStripZeros(hexlify(latestBlockSynchronized)),
     toBlock: hexStripZeros(hexlify(latestBlockMined)),
     topics: [TRANSFER_TOPIC_HASH]
@@ -32,7 +32,7 @@ const syncTransfers = async (
     VALUES
       (?,?,?,?,?,?,?)
     ON CONFLICT(transfer_unique_id)
-    DO NOTHING    
+    DO NOTHING
   `);
 
   db.transaction(() => {
@@ -57,7 +57,7 @@ const syncTransfers = async (
           pastEvent.logIndex
         );
       }
-  
+
       if (toAccount.toLowerCase() !== token.toLowerCase()) {
         stmt.run(
           token,
