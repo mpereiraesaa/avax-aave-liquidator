@@ -33,7 +33,7 @@ const syncReserves = async () => {
 
     const price = await oracle.getAssetPrice(reserve);
 
-    return [reserve, variableBorrowIndex, currentVariableBorrowRate, liquidityIndex, currentLiquidityRate, lastUpdateTimestamp, price];
+    return [reserve, variableBorrowIndex.toString(), currentVariableBorrowRate.toString(), liquidityIndex.toString(), currentLiquidityRate.toString(), lastUpdateTimestamp, price.toString()];
   }));
 
   const stmt = db.prepare(`
