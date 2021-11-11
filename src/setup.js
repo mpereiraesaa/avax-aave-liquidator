@@ -1,3 +1,5 @@
+global.currentConfiguration = require("./configuration.json");
+
 const ethers = require('ethers');
 const { BigNumber } = ethers;
 const { abi: LendingPoolABI } = require("@aave/protocol-v2/artifacts/contracts/protocol/lendingpool/LendingPool.sol/LendingPool.json");
@@ -5,7 +7,7 @@ const addresses = require('./addresses/avax.json');
 const { getDBConnection } = require('./utils');
 const createTables = require('./createTables');
 
-const provider = new ethers.providers.JsonRpcProvider(configuration.url);
+const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
 async function run() {
   await createTables();

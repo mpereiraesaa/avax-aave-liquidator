@@ -6,7 +6,7 @@ const { abi: PriceOracleGetterABI } = require("@aave/protocol-v2/artifacts/contr
 const addresses = require('../addresses/avax.json');
 const { getDBConnection, GET_RESERVES, waitForTransactions } = require('../utils');
 
-const provider = new ethers.providers.JsonRpcProvider(configuration.url);
+const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
 const syncReserves = async () => {
   const db = getDBConnection();

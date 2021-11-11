@@ -1,7 +1,7 @@
 const ethers = require('ethers');
 const { getDBConnection } = require('../utils');
 
-const provider = new ethers.providers.JsonRpcProvider(configuration.url);
+const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
 const DEPLOY_BLOCK = 6628717;
 
