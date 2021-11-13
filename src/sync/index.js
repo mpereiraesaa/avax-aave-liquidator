@@ -3,7 +3,7 @@ const { getDBConnection } = require('../utils');
 const { syncTransfers } = require('./syncTransfers');
 const { syncDebt } = require('./syncDebt');
 
-const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
+const provider = new ethers.providers.WebSocketProvider(currentConfiguration.url);
 
 const DEPLOY_BLOCK = 6628717;
 
