@@ -21,7 +21,7 @@ async function syncState(iterations = 1) {
   const latestBlockSynchronized = lastBlockSyncQueryResult.length > 0 ? lastBlockSyncQueryResult[0].block_number : 0;
   console.log(`latestBlockSynchronized: ${latestBlockSynchronized}`);
 
-  const stepSize = 5000;
+  const stepSize = 1000;
 
   if (latestBlockSynchronized < latestBlockMined) {
     let fromBlock = latestBlockSynchronized ? latestBlockSynchronized + 1 : 0;
