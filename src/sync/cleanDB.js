@@ -5,7 +5,7 @@ function cleanDB() {
   const stmt = db.prepare(`DELETE FROM TRANSFERS`);
 
   db.transaction(() => {
-    // stmt.run();
+    stmt.run();
   })();
 }
 
