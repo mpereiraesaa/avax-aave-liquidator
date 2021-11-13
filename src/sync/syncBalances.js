@@ -7,9 +7,9 @@ function syncAccountBalances() {
     INSERT INTO BALANCES
       (token, user, balance, token_user_unique_id, last_block)
       SELECT
-        token,
+        LOWER(token),
         user,
-        SUM(amount) as balance,
+        add_all(amount) as balance,
         token || user as token_user_unique_id,
         MAX(block_number) as last_block
       FROM TRANSFERS

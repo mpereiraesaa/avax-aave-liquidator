@@ -107,13 +107,13 @@ async function run() {
     `);
 
     // Register aToken
-    stmt2.run(aTokenAddress, 0);
+    stmt2.run(aTokenAddress.toLowerCase(), 0);
 
     // Register Stable Debt token
-    stmt2.run(stableDebtTokenAddress, 1);
+    stmt2.run(stableDebtTokenAddress.toLowerCase(), 1);
 
     // Register Variable Debt token
-    stmt2.run(variableDebtTokenAddress, 2);
+    stmt2.run(variableDebtTokenAddress.toLowerCase(), 2);
   });
 }
 

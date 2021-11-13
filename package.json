@@ -45,6 +45,7 @@
     "fund-cchain-addresses": "npx hardhat run scripts/fund-cchain-addresses.js"
   },
   "dependencies": {
+    "@aave/protocol-js": "^4.3.0",
     "@aave/protocol-v2": "^1.0.1",
     "better-sqlite3": "^7.4.4",
     "bignumber.js": "^9.0.1",

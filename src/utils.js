@@ -12,6 +12,15 @@ const NETWORK = "AVALANCHE";
 const GET_TOKENS = `SELECT * FROM TOKEN_INFO`;
 const GET_STABLE_DEBT_TOKENS = `SELECT * FROM TOKEN_INFO WHERE interest_rate_mode = 1;`;
 const GET_RESERVES = `SELECT * FROM RESERVE_DATA`;
+const GET_BALANCES = `
+  SELECT
+  b.token, b.user, b.balance, ti.interest_rate_mode, rd.liquidity_index, rd.current_liquidity_rate, rd.variable_borrow_index, rd.current_variable_borrow_rate, rd.liquidation_threshold, rd.liquidation_bonus, rd.decimals, rd.last_update, rd.ltv, rd.reserve_factor
+  FROM BALANCES b
+  INNER JOIN RESERVE_DATA rd
+  ON (LOWER(b.token) = LOWER(rd.atoken_address) OR LOWER(b.token) = LOWER(rd.stable_debt_token_address) OR LOWER(b.token) = LOWER(rd.variable_debt_token_address))
+  INNER JOIN TOKEN_INFO ti ON (LOWER(ti.token) = LOWER(b.token))
+  WHERE b.balance > 0
+`;
 
 function getDBConnection() {
   const dbPath = path.resolve(__dirname, `../database/${PROTOCOL}_${NETWORK}.sqlite`);
@@ -25,8 +34,8 @@ function getDBConnection() {
     });
 
     db.aggregate('add_all', {
-      start: 0,
-      step: (total, nextValue) => new BigNumber(total).plus(nextValue),
+      start: new BigNumber(0),
+      step: (total, nextValue) => total.plus(new BigNumber(nextValue)),
       result: total => total.toString(10)
     });
   }
@@ -51,4 +60,5 @@ module.exports = {
   GET_TOKENS,
   GET_STABLE_DEBT_TOKENS,
   GET_RESERVES,
+  GET_BALANCES,
 };

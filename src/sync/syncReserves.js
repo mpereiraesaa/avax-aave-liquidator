@@ -39,7 +39,7 @@ const syncReserves = async () => {
   const stmt = db.prepare(`
     UPDATE RESERVE_DATA
     SET variable_borrow_index=?, current_variable_borrow_rate=?,liquidity_index=?,current_liquidity_rate=?,last_update=?,asset_price=?
-    WHERE reserve = ?    
+    WHERE LOWER(reserve) = LOWER(?)
   `);
 
   db.transaction(() => {
