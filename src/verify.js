@@ -20,9 +20,8 @@ async function run() {
 
   console.log(`blockNumber: ${blockNumber}`);
 
-  // for (let i = 0; i < balanceData.length; i++) {
-  await Promise.all(balanceData.map(async (data) => {
-    // const data = balanceData[i];
+  for (let i = 0; i < balanceData.length; i++) {
+    const data = balanceData[i];
 
     const calculatedBalance = calculateBalance(data, timestamp);
 
@@ -37,8 +36,10 @@ async function run() {
 
     if (diff > 6) {
       console.log(`index: ${i} - user: ${data.user} with token: ${data.token} type ${data.interest_rate_mode} mismatch, due to ${balanceOnChain.toString()} not equal to ${calculatedBalance.toString(10)} - base off-chain balance: ${data.balance}`);
+    } else {
+      console.log(`diff:${diff} is good for index:${i}`);
     }
-  }));
+  };
 }
 
 run();
