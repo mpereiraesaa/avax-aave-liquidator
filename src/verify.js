@@ -16,10 +16,13 @@ async function run() {
 
   const balanceData = db.prepare(GET_BALANCES).all();
 
-  const { timestamp } = await provider.getBlock('latest');
+  const { timestamp, number: blockNumber } = await provider.getBlock('latest');
 
-  for (let i = 0; i < balanceData.slice(1, 3).length; i++) {
-    const data = balanceData[i];
+  console.log(`blockNumber: ${blockNumber}`);
+
+  // for (let i = 0; i < balanceData.length; i++) {
+  await Promise.all(balanceData.map(async (data) => {
+    // const data = balanceData[i];
 
     const calculatedBalance = calculateBalance(data, timestamp);
 
@@ -27,17 +30,15 @@ async function run() {
     if (data.interest_rate_mode === 0) token = new ethers.Contract(data.token, aTokenABI, provider);
     if (data.interest_rate_mode === 2) token = new ethers.Contract(data.token, variableDebtABI, provider);
 
-    const balanceOnChain = await token.balanceOf(data.user);
-    const scaledBalance = await token.scaledBalanceOf(data.user);
+    const balanceOnChain = await token.balanceOf(data.user, { blockTag: blockNumber});
+    // const scaledBalance = await token.scaledBalanceOf(data.user);
 
-    if (balanceOnChain.toString() !== calculatedBalance.toString(10)) {
-      console.log(`index: ${i} - user: ${data.user} with token: ${data.token} type ${data.interest_rate_mode} mismatch, due to ${balanceOnChain.toString()} not equal to ${calculatedBalance.toString(10)} - scaled: ${scaledBalance.toString()} - base off-chain balance: ${data.balance}`);
-      console.log('current_liquidity_rate', data.current_liquidity_rate);
-      console.log('liquidity_index', data.liquidity_index);
-      console.log('last_update', data.last_update);
-      console.log('currentTimestamp', timestamp);
+    const diff = Math.abs(balanceOnChain.toString() - calculatedBalance.toString(10));
+
+    if (diff > 6) {
+      console.log(`index: ${i} - user: ${data.user} with token: ${data.token} type ${data.interest_rate_mode} mismatch, due to ${balanceOnChain.toString()} not equal to ${calculatedBalance.toString(10)} - base off-chain balance: ${data.balance}`);
     }
-  }
+  }));
 }
 
 run();

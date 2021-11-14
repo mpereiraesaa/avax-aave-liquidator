@@ -6,18 +6,18 @@ const { getDBConnection, GET_TOKENS, waitForTransactions } = require('../utils')
 const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
 const iface = new ethers.utils.Interface([
-  "event Transfer(address indexed src, address indexed dst, uint wad)",
   "event Mint(address indexed from, uint value, uint index)",
   "event Mint(address indexed from, address indexed onBehalfOf, uint value, uint index)",
   "event Burn(address indexed from, address indexed target, uint value, uint index)", //aToken
   "event Burn(address indexed user, uint amount, uint index)",
+  "event BalanceTransfer(address indexed from, address indexed to, uint value, uint index)"
 ]);
 
-const TRANSFER_TOPIC_HASH = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const MINT_HASH_1 = '0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f';
 const MINT_HASH_2 = '0x2f00e3cdd69a77be7ed215ec7b2a36784dd158f921fca79ac29deffa353fe6ee';
 const BURN_HASH_1 = '0x5d624aa9c148153ab3446c1b154f660ee7701e549fe9b62dab7171b1c80e6fa2';
 const BURN_HASH_2 = '0x49995e5dd6158cf69ad3e9777c46755a1a826a446c6416992167462dad033b2a';
+const BALANCE_TRANSFER_HASH = '0x4beccb90f994c31aced7a23b5611020728a23d8ec5cddd1a3e9d97b96fda8666';
 
 const syncTransfers = async (
   latestBlockSynchronized,
@@ -32,14 +32,14 @@ const syncTransfers = async (
     address: tokenAddresses,
     fromBlock: hexStripZeros(hexlify(latestBlockSynchronized)),
     toBlock: hexStripZeros(hexlify(latestBlockMined)),
-    topics: [[TRANSFER_TOPIC_HASH, MINT_HASH_1, MINT_HASH_2, BURN_HASH_1, BURN_HASH_2]]
+    topics: [[MINT_HASH_1, MINT_HASH_2, BURN_HASH_1, BURN_HASH_2, BALANCE_TRANSFER_HASH]]
   }]);
 
   const stmt = db.prepare(`
     INSERT INTO TRANSFERS
-      (token, user, amount, transfer_unique_id, block_number, transaction_hash, log_index)
+      (token, user, amount, transfer_unique_id, event_name, block_number, transaction_hash, log_index)
     VALUES
-      (?,?,?,?,?,?,?)
+      (?,?,?,?,?,?,?,?)
     ON CONFLICT(transfer_unique_id)
     DO NOTHING
   `);
@@ -62,6 +62,7 @@ const syncTransfers = async (
           user,
           amountScaled.toString(10),
           user + token + pastEvent.transactionHash + pastEvent.logIndex,
+          eventName,
           blockNumber,
           pastEvent.transactionHash,
           pastEvent.logIndex
@@ -80,6 +81,7 @@ const syncTransfers = async (
           user,
           amountScaled.toString(10),
           user + token + pastEvent.transactionHash + pastEvent.logIndex,
+          eventName,
           blockNumber,
           pastEvent.transactionHash,
           pastEvent.logIndex
@@ -98,6 +100,7 @@ const syncTransfers = async (
           user,
           "-"+amountScaled.toString(10),
           user + token + pastEvent.transactionHash + pastEvent.logIndex,
+          eventName,
           blockNumber,
           pastEvent.transactionHash,
           pastEvent.logIndex
@@ -116,39 +119,41 @@ const syncTransfers = async (
           user,
           "-"+amountScaled.toString(10),
           user + token + pastEvent.transactionHash + pastEvent.logIndex,
+          eventName,
           blockNumber,
           pastEvent.transactionHash,
           pastEvent.logIndex
         );
       }
 
-      if (topic.toLowerCase() === TRANSFER_TOPIC_HASH.toLowerCase()) {
-        const fromAccount = args[0];
-        const toAccount = args[1];
-    
+      if (topic.toLowerCase() === BALANCE_TRANSFER_HASH.toLowerCase()) {
+        const from = args[0];
+        const to = args[1];
         const amount = args[2].toString();
+        const index = args[3].toString();
 
-        // Not minting or Burning
-        if (fromAccount !== ethers.constants.AddressZero && toAccount !== ethers.constants.AddressZero) {
-          stmt.run(
-            token,
-            fromAccount,
-            '-' + amount,
-            fromAccount + token + pastEvent.transactionHash + pastEvent.logIndex,
-            blockNumber,
-            pastEvent.transactionHash,
-            pastEvent.logIndex
-          );
-          stmt.run(
-            token,
-            toAccount,
-            amount,
-            toAccount + token + pastEvent.transactionHash + pastEvent.logIndex,
-            blockNumber,
-            pastEvent.transactionHash,
-            pastEvent.logIndex
-          );
-        }
+        const amountScaled = rayDiv(amount, index);
+
+        stmt.run(
+          token,
+          from,
+          "-"+amountScaled.toString(10),
+          from + token + pastEvent.transactionHash + pastEvent.logIndex,
+          eventName,
+          blockNumber,
+          pastEvent.transactionHash,
+          pastEvent.logIndex
+        );
+        stmt.run(
+          token,
+          to,
+          amountScaled.toString(10),
+          to + token + pastEvent.transactionHash + pastEvent.logIndex,
+          eventName,
+          blockNumber,
+          pastEvent.transactionHash,
+          pastEvent.logIndex
+        );
       }
     };
   })();

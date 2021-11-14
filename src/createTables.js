@@ -28,6 +28,7 @@ function createTables() {
       user VARCHAR(255),
       amount VARCHAR(255),
       transfer_unique_id VARCHAR(255) UNIQUE NOT NULL,
+      event_name VARCHAR(255),
       block_number BIGINT,
       transaction_hash VARCHAR(255),
       log_index VARCHAR(255)
