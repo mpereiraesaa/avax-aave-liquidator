@@ -14,7 +14,7 @@ const GET_STABLE_DEBT_TOKENS = `SELECT * FROM TOKEN_INFO WHERE interest_rate_mod
 const GET_RESERVES = `SELECT * FROM RESERVE_DATA`;
 const GET_BALANCES = `
   SELECT
-  b.token, b.user, b.balance, ti.interest_rate_mode, rd.liquidity_index, rd.current_liquidity_rate, rd.variable_borrow_index, rd.current_variable_borrow_rate, rd.liquidation_threshold, rd.liquidation_bonus, rd.decimals, rd.last_update, rd.ltv, rd.reserve_factor
+  rd.reserve, b.token, b.user, b.balance, ti.interest_rate_mode, rd.liquidity_index, rd.current_liquidity_rate, rd.variable_borrow_index, rd.current_variable_borrow_rate, rd.liquidation_threshold, rd.liquidation_bonus, rd.decimals, rd.last_update, rd.ltv, rd.reserve_factor, rd.asset_price
   FROM BALANCES b
   INNER JOIN RESERVE_DATA rd
   ON (LOWER(b.token) = LOWER(rd.atoken_address) OR LOWER(b.token) = LOWER(rd.stable_debt_token_address) OR LOWER(b.token) = LOWER(rd.variable_debt_token_address))
