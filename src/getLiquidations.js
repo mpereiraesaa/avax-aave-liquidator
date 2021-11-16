@@ -24,7 +24,7 @@ async function run() {
 
   const lendingPool = new ethers.Contract(addresses.LendingPool, LendingPoolABI, provider);
 
-  for (acc of Object.keys(accounts).slice(0,5)) {
+  for (acc of Object.keys(accounts)) {
   // Object.keys(accounts).forEach(async (acc) => {
     const {
       totalCollateralInETH,
@@ -53,8 +53,11 @@ async function run() {
       healthFactor2
     ] = data;
 
-    // console.log(totalCollateralETH2.toString(), totalCollateralInETH.toString(10));
-    console.log(healthFactor2.toHexString() === NO_HEALTH_FACTOR ? -1 : healthFactor2.toString(), healthFactor.toString(10));
+    console.log(healthFactor2.toHexString() === NO_HEALTH_FACTOR ? -1 : healthFactor2.toString(), healthFactor.toString());
+
+    if (!healthFactor.eq(-1) && healthFactor.lt(1)) {
+      console.log(`Liquidation found for ${acc}`);
+    }
   };
 }
 
