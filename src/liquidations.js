@@ -5,7 +5,7 @@ const { BigNumber } = require("bignumber.js");
 const { calculateBalance } = require("./functions");
 const { getDBConnection, GET_BALANCES } = require('./utils');
 
-BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
+// BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
 const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
@@ -24,6 +24,7 @@ async function getAccounts(timestamp) {
       interest_rate_mode: mode,
       user,
       reserve,
+      liquidation_bonus: liquidationBonus,
     } = data;
 
     if (!accountAssets[user]) {
@@ -48,7 +49,7 @@ async function getAccounts(timestamp) {
       accountAssets[user]['avgLtv'] = accountAssets[user]['avgLtv'].plus(liquidityBalanceETH.times(ltv));
       accountAssets[user]['avgLiquidationThreshold'] = accountAssets[user]['avgLiquidationThreshold'].plus(liquidityBalanceETH.times(liquidationThreshold));
 
-      accountAssets[user].collateral.push({ reserve, liquidityBalanceETH });
+      accountAssets[user].collateral.push({ reserve, liquidityBalanceETH, liquidationBonus, assetPrice, decimals });
     }
 
     if (mode === 2) {
@@ -56,7 +57,7 @@ async function getAccounts(timestamp) {
         new BigNumber(assetPrice).times(calculatedBalance).div(tokenUnit)
       );
       accountAssets[user]['totalDebtInETH'] = totalDebtInETH;
-      accountAssets[user].debt.push({ reserve, totalDebtInETH });
+      accountAssets[user].debt.push({ reserve, totalDebtInETH, calculatedBalance, assetPrice, decimals });
     }
   });
 
