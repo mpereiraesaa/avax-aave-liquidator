@@ -17,8 +17,6 @@ const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 const LIQUIDATION_CLOSE_FACTOR_PERCENT = 4900; // max is 5000
 
 async function run() {
-  await sync(100);
-
   const { timestamp } = await provider.getBlock('latest');
 
   const accounts = await getAccounts(timestamp);
@@ -105,6 +103,10 @@ async function run() {
 }
 
 provider.on('block', async (blockNumber) => {
+  console.time(`Synchronization ${blockNumber}`);
+  await sync(100);
+  console.timeEnd(`Synchronization ${blockNumber}`);
+
   await run();
 });
 

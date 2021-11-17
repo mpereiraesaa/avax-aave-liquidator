@@ -7,7 +7,6 @@ const { waitForTransactions } = require('./utils');
 
 async function sync(iterations = 1) {
   await createTables();
-  console.time('Synchronization');
   await syncState(iterations);
   await waitForTransactions();
   syncAccountBalances();
@@ -15,7 +14,6 @@ async function sync(iterations = 1) {
   cleanDB();
   await syncReserves();
   await waitForTransactions();
-  console.timeEnd('Synchronization');
 }
 
 module.exports = { sync }
