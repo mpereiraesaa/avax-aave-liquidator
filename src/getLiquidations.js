@@ -15,6 +15,7 @@ const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 // const NO_HEALTH_FACTOR = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 
 const LIQUIDATION_CLOSE_FACTOR_PERCENT = 4900; // max is 5000
+let IS_RUNNING = false;
 
 async function run() {
   const { timestamp } = await provider.getBlock('latest');
@@ -103,10 +104,17 @@ async function run() {
 }
 
 provider.on('block', async (blockNumber) => {
+  if (IS_RUNNING) {
+    return;
+  }
+
+  IS_RUNNING = true;
+
   console.time(`Synchronization ${blockNumber}`);
   await sync(100);
   console.timeEnd(`Synchronization ${blockNumber}`);
 
   await run();
-});
 
+  IS_RUNNING = false;
+});
