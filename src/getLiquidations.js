@@ -109,8 +109,9 @@ async function run() {
           selectedDebtAsset,
           debtToCover.toString(10)
         );
-        // tx.gasLimit = 1100000; // 1M
-        // tx.gasPrice = ethers.utils.parseUnits('40', 'gwei');
+        tx.gasLimit = 1100000; // 1M
+        tx.gasPrice = "auto";
+        // tx.gasPrice = ethers.utils.parseUnits('80', 'gwei');
 
         console.log("Liquidating account...");
         const txSent = await mainAccount.sendTransaction(tx);
