@@ -137,7 +137,11 @@ provider.on('block', async (blockNumber) => {
   await sync(100);
   console.timeEnd(`Synchronization`);
 
-  await run();
+  try {
+    await run();
+  } catch (err) {
+    console.log(err);    
+  }
 
   IS_RUNNING = false;
 });
