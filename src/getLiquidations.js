@@ -1,5 +1,8 @@
+require('dotenv').config({ path: '../.env' });
+
 global.currentConfiguration = require("./configuration.json");
 
+const { abi: LiquidatorABI } = require("../artifacts/contracts/Liquidator.sol/Liquidator.json");
 const { abi: LendingPoolABI } = require("@aave/protocol-v2/artifacts/contracts/protocol/lendingpool/LendingPool.sol/LendingPool.json");
 const ethers = require('ethers');
 const { BigNumber } = require("bignumber.js");
@@ -12,10 +15,18 @@ const addresses = require('./addresses/avax.json');
 
 const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
+const wallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC);
+const mainAccount = wallet.connect(provider);
+
 // const NO_HEALTH_FACTOR = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 
 const LIQUIDATION_CLOSE_FACTOR_PERCENT = 4900; // max is 5000
 let IS_RUNNING = false;
+let LIQUIDATION_IN_PROCESS = false;
+
+const liquidator = new ethers.Contract(currentConfiguration.liquidator, LiquidatorABI, provider);
+
+const MINIMUM_PROFITABLE_DEBT = 60; // USD
 
 async function run() {
   const { timestamp } = await provider.getBlock('latest');
@@ -41,17 +52,6 @@ async function run() {
       totalDebtInETH,
       finalAvgLiquidationThreshold,
     );
-
-    // const data = await lendingPool.getUserAccountData(acc);
-    // const [
-    //   totalCollateralETH2,
-    //   totalDebtETH2,
-    //   availableBorrowsETH2,
-    //   currentLiquidationThreshold2,
-    //   ltv2,
-    //   healthFactor2
-    // ] = data;
-    // console.log(healthFactor2.toHexString() === NO_HEALTH_FACTOR ? -1 : healthFactor2.toString(), healthFactor.toString());
 
     if (!healthFactor.eq(-1) && healthFactor.lt(1)) {
       console.log(`Liquidation found for ${acc}`);
@@ -99,6 +99,29 @@ async function run() {
       console.log(`debtToCover: ${debtToCover.toString()}`);
       console.log(`debtToCoverUSD: ${debtToCoverETH.toString()/1e18}`);
       console.log(`user: ${acc}`);
+
+      if (debtToCoverETH.toString()/1e18 > MINIMUM_PROFITABLE_DEBT && !LIQUIDATION_IN_PROCESS) {
+        LIQUIDATION_IN_PROCESS = true;
+
+        const tx = await liquidator.populateTransaction.doLiquidate(
+          acc,
+          collateralAsset,
+          selectedDebtAsset,
+          debtToCover.toString(10)
+        );
+        tx.gasLimit = 1100000; // 1M
+        tx.gasPrice = ethers.utils.parseUnits('40', 'gwei');
+
+        console.log("Liquidating account...");
+        const txSent = await mainAccount.sendTransaction(tx);
+        console.log("Waiting for transaction");
+        const txReceipt = await txSent.wait();
+        console.log(txReceipt);
+
+        LIQUIDATION_IN_PROCESS = false;
+      }
+
+
     }
   };
 }
@@ -110,9 +133,9 @@ provider.on('block', async (blockNumber) => {
 
   IS_RUNNING = true;
 
-  console.time(`Synchronization ${blockNumber}`);
+  console.time(`Synchronization`);
   await sync(100);
-  console.timeEnd(`Synchronization ${blockNumber}`);
+  console.timeEnd(`Synchronization`);
 
   await run();
 

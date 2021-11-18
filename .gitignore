@@ -20,7 +20,7 @@ node_modules/
 !.vscode/settings.json.default
 
 cache/
-artifacts/
+# artifacts/
 
 .yalc
 yalc.lock
