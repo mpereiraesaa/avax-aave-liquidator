@@ -26,7 +26,7 @@ let LIQUIDATION_IN_PROCESS = false;
 
 const liquidator = new ethers.Contract(currentConfiguration.liquidator, LiquidatorABI, provider);
 
-const MINIMUM_PROFITABLE_DEBT = 1; // USD
+const MINIMUM_PROFITABLE_DEBT = 35; // USD
 
 async function run() {
   const { timestamp } = await provider.getBlock('latest');
@@ -110,8 +110,7 @@ async function run() {
           debtToCover.toString(10)
         );
         tx.gasLimit = 1100000; // 1M
-        tx.gasPrice = "auto";
-        // tx.gasPrice = ethers.utils.parseUnits('80', 'gwei');
+        tx.gasPrice = ethers.utils.parseUnits('85', 'gwei');
 
         console.log("Liquidating account...");
         const txSent = await mainAccount.sendTransaction(tx);
