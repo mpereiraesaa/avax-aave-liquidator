@@ -42,7 +42,7 @@ module.exports= {
       gasPrice: 225000000000,
       timeout: 1000000,
       chainId: 43114,
-      forking: forkingData
+      forking: forkingData,
     },
     local: {
       url: 'http://localhost:9650/ext/bc/C/rpc',

@@ -222,8 +222,6 @@ describe('Test liquidation', function () {
         (500*1e6).toString()                
       )).wait();
 
-      console.log(tx);
-
       expect(tx.events.some((evt) => evt.event === "LiquidationCall").length > 0);
 
       const newBalanceCol = await USDT.balanceOf(liquidator.address);

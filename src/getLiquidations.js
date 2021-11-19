@@ -9,7 +9,6 @@ const { BigNumber } = require("bignumber.js");
 const { calculateHealthFactorFromBalances, pow10, LTV_PRECISION } = require("@aave/protocol-js");
 const { getAccounts } = require("./liquidations");
 const { sync } = require('./synchronization');
-const addresses = require('./addresses/avax.json');
 
 // BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
@@ -31,7 +30,7 @@ const MINIMUM_PROFITABLE_DEBT = 35; // USD
 async function run() {
   const { timestamp } = await provider.getBlock('latest');
 
-  const accounts = await getAccounts(timestamp);
+  const [accounts, gasPrice] = await Promise.all([getAccounts(timestamp), provider.getGasPrice()]);
   // const lendingPool = new ethers.Contract(addresses.LendingPool, LendingPoolABI, provider);
 
   for (acc of Object.keys(accounts)) {
@@ -110,7 +109,7 @@ async function run() {
           debtToCover.toString(10)
         );
         tx.gasLimit = 1100000; // 1M
-        tx.gasPrice = ethers.utils.parseUnits('85', 'gwei');
+        tx.gasPrice = gasPrice.mul(150).div(100).toString(); // increase 50% to current block gas price RAPID
 
         console.log("Liquidating account...");
         const txSent = await mainAccount.sendTransaction(tx);
