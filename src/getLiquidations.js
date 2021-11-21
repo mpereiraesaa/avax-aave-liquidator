@@ -108,7 +108,7 @@ async function run() {
           selectedDebtAsset,
           debtToCover.toString(10)
         );
-        tx.gasLimit = 1100000; // 1M
+        tx.gasLimit = 2000000; // 2M
         tx.gasPrice = gasPrice.mul(150).div(100).toString(); // increase 50% to current block gas price RAPID
 
         console.log("Liquidating account...");

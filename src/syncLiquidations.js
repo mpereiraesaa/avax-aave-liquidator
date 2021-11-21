@@ -1,10 +1,13 @@
+global.currentConfiguration = require("./configuration.json");
+
 const ethers = require('ethers');
 const { hexlify, hexStripZeros } = ethers.utils;
 const { abi: LendingPoolABI } = require("@aave/protocol-v2/artifacts/contracts/protocol/lendingpool/LendingPool.sol/LendingPool.json");
-const { URL } = currentConfiguration;
+const { url } = currentConfiguration;
 const addresses = require('./addresses/avax.json');
+const { getDBConnection, waitForTransactions } = require("./utils");
 
-const provider = new ethers.providers.JsonRpcProvider(URL);
+const provider = new ethers.providers.JsonRpcProvider(url);
 
 const LIQUIDATE_BORROW_TOPIC_HASH = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286';
 
@@ -27,9 +30,9 @@ const sync = async (
 
   const stmt = db.prepare(`
     INSERT INTO LIQUIDATIONS
-      (ctoken, liquidator, borrower, repay_amount, ctoken_collateral, seize_tokens, block_number, transaction_hash, log_index)
+      (debt_asset, liquidator, borrower, debt_to_cover, collateral_asset, liquidated_collateral_amount, receive_atoken, block_number, transaction_hash, log_index)
     VALUES
-      (?,?,?,?,?,?,?,?,?)
+      (?,?,?,?,?,?,?,?,?,?)
     ON CONFLICT(transaction_hash)
     DO NOTHING
   `);
@@ -38,22 +41,23 @@ const sync = async (
     for (pastEvent of pastEvents) {
       const { args } = iface.parseLog(pastEvent);
       const blockNumber = Number(pastEvent.blockNumber);
-      const cToken = pastEvent.address.toLowerCase();
 
-      const liquidator = args[0];
-      const borrower = args[1];
-
-      const repayAmount = args[2].toString();
-      const cTokenCollateral = args[3];
-      const seizeTokens = args[4].toString();
+      const collateralAsset = args[0];
+      const debtAsset = args[1];
+      const borrower = args[2];
+      const debtToCover = args[3].toString();
+      const liquidatedCollateralAmount = args[4].toString();
+      const liquidator = args[5];
+      const receiveAToken = args[6];
 
       stmt.run(
-        cToken,
+        debtAsset,
         liquidator,
         borrower,
-        repayAmount,
-        cTokenCollateral,
-        seizeTokens,
+        debtToCover,
+        collateralAsset,
+        liquidatedCollateralAmount,
+        Number(receiveAToken),
         blockNumber,
         pastEvent.transactionHash,
         pastEvent.logIndex
@@ -65,13 +69,10 @@ const sync = async (
 }
 
 async function syncLiquidations(iterations = 1) {
-  const cTokens = db.prepare(GET_CTOKENS_SQL_QUERY).all();
-  const cTokenAddresses = cTokens.map((cToken) => cToken.ctoken);
-
   const latestBlockMined = await provider.getBlockNumber();
-  const stepSize = 5000;
+  const stepSize = 2000;
 
-  let fromBlock = 11705358;
+  let fromBlock = 7161901;
   console.log(`fromBlock: ${fromBlock} -> latestBlockMined: ${latestBlockMined}`);
 
   let i = 0;
@@ -86,7 +87,7 @@ async function syncLiquidations(iterations = 1) {
     console.log(`Liquidations:Synchronizing ${fromBlock} -> ${toBlock}`);
 
     await Promise.all([
-      sync(cTokenAddresses, fromBlock, toBlock),
+      sync(fromBlock, toBlock),
     ]);
 
     fromBlock = toBlock;

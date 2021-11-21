@@ -5,6 +5,7 @@ database
 *.tsbuildinfo
 
 .DS_Store
+liquidation.txt
 
 # Logs
 logs
