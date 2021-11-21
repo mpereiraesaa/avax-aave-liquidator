@@ -25,7 +25,7 @@ let LIQUIDATION_IN_PROCESS = false;
 
 const liquidator = new ethers.Contract(currentConfiguration.liquidator, LiquidatorABI, provider);
 
-const MINIMUM_PROFITABLE_DEBT = 35; // USD
+const MINIMUM_PROFITABLE_DEBT = 100; // USD
 
 async function run() {
   const { timestamp } = await provider.getBlock('latest');
