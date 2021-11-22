@@ -22,6 +22,7 @@ const mainAccount = wallet.connect(provider);
 const LIQUIDATION_CLOSE_FACTOR_PERCENT = 4900; // max is 5000
 let IS_RUNNING = false;
 let LIQUIDATION_IN_PROCESS = false;
+let FAILED_TRANSACTIONS = 0;
 
 const liquidator = new ethers.Contract(currentConfiguration.liquidator, LiquidatorABI, provider);
 
@@ -118,8 +119,8 @@ async function run() {
         console.log(txReceipt);
 
         LIQUIDATION_IN_PROCESS = false;
+        FAILED_TRANSACTIONS = 0; // reset counter for throttling
       }
-
 
     }
   };
@@ -139,7 +140,18 @@ provider.on('block', async (blockNumber) => {
   try {
     await run();
   } catch (err) {
-    console.log(err);    
+    console.log(err);
+    FAILED_TRANSACTIONS += 1;
+
+    if (FAILED_TRANSACTIONS >= 2) {
+      // STOP LIQUIDATIONS ATTEMPTS
+      LIQUIDATION_IN_PROCESS = true;
+
+      // throttle 15 secs
+      // await new Promise(r => setTimeout(r, 15000));
+    } else {
+      LIQUIDATION_IN_PROCESS = false;
+    }
   }
 
   IS_RUNNING = false;
