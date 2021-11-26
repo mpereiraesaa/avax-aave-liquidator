@@ -72,7 +72,7 @@ async function syncLiquidations(iterations = 1) {
   const latestBlockMined = await provider.getBlockNumber();
   const stepSize = 2000;
 
-  let fromBlock = 7161901;
+  let fromBlock = 7376613;
   console.log(`fromBlock: ${fromBlock} -> latestBlockMined: ${latestBlockMined}`);
 
   let i = 0;

@@ -3,12 +3,14 @@ require('dotenv').config({ path: '../.env' });
 global.currentConfiguration = require("./configuration.json");
 
 const { abi: LiquidatorABI } = require("../artifacts/contracts/Liquidator.sol/Liquidator.json");
-const { abi: LendingPoolABI } = require("@aave/protocol-v2/artifacts/contracts/protocol/lendingpool/LendingPool.sol/LendingPool.json");
+const { abi: PriceOracleGetterABI } = require("@aave/protocol-v2/artifacts/contracts/interfaces/IPriceOracleGetter.sol/IPriceOracleGetter.json");
+
 const ethers = require('ethers');
 const { BigNumber } = require("bignumber.js");
 const { calculateHealthFactorFromBalances, pow10, LTV_PRECISION } = require("@aave/protocol-js");
 const { getAccounts } = require("./liquidations");
 const { sync } = require('./synchronization');
+const addresses = require("./addresses/avax.json");
 
 // BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
@@ -26,13 +28,17 @@ let FAILED_TRANSACTIONS = 0;
 
 const liquidator = new ethers.Contract(currentConfiguration.liquidator, LiquidatorABI, provider);
 
-const MINIMUM_PROFITABLE_DEBT = 250; // USD
+const WRAPPED_AVAX = "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7";
 
 async function run() {
   const { timestamp } = await provider.getBlock('latest');
+  const oracle = new ethers.Contract(addresses.AaveOracle, PriceOracleGetterABI, provider);
 
-  const [accounts, gasPrice] = await Promise.all([getAccounts(timestamp), provider.getGasPrice()]);
-  // const lendingPool = new ethers.Contract(addresses.LendingPool, LendingPoolABI, provider);
+  const [accounts, gasPrice, AVAX_PRICE] = await Promise.all([
+    getAccounts(timestamp),
+    provider.getGasPrice(),
+    oracle.getAssetPrice(WRAPPED_AVAX),
+  ]);
 
   for (acc of Object.keys(accounts)) {
   // Object.keys(accounts).forEach(async (acc) => {
@@ -100,7 +106,16 @@ async function run() {
       console.log(`debtToCoverUSD: ${debtToCoverETH.toString()/1e18}`);
       console.log(`user: ${acc}`);
 
-      if (debtToCoverETH.toString()/1e18 > MINIMUM_PROFITABLE_DEBT && !LIQUIDATION_IN_PROCESS) {
+      const rewards = debtToCoverETH.toString()/1e18 * 0.08; // 8% at least premium.
+      const estimatedGasLimit = 1300000;
+      const estimatedGasPrice = gasPrice.mul(305).div(100).toString(); // increase 205%
+      const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE * 1e18);
+
+      console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
+      console.log(`rewards: ${rewards}`);
+      console.log(`finalCost: ${finalCost}`);
+
+      if (rewards > finalCost && !LIQUIDATION_IN_PROCESS) {
         LIQUIDATION_IN_PROCESS = true;
 
         const tx = await liquidator.populateTransaction.doLiquidate(
@@ -110,7 +125,7 @@ async function run() {
           debtToCover.toString(10)
         );
         tx.gasLimit = 2000000; // 2M
-        tx.gasPrice = gasPrice.mul(150).div(100).toString(); // increase 50% to current block gas price RAPID
+        tx.gasPrice = estimatedGasPrice;
 
         console.log("Liquidating account...");
         const txSent = await mainAccount.sendTransaction(tx);
