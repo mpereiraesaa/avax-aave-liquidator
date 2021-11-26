@@ -35,10 +35,11 @@ async function run() {
   const { timestamp } = await provider.getBlock('latest');
   const oracle = new ethers.Contract(addresses.AaveOracle, PriceOracleGetterABI, provider);
 
-  const [accounts, gasPrice, AVAX_PRICE] = await Promise.all([
+  const [accounts, gasPrice, AVAX_PRICE, AVAX_BALANCE] = await Promise.all([
     getAccounts(timestamp),
     provider.getGasPrice(),
     oracle.getAssetPrice(WRAPPED_AVAX),
+    provider.getBalance(mainAccount.address),
   ]);
 
   for (acc of Object.keys(accounts)) {
@@ -109,17 +110,28 @@ async function run() {
 
       const rewards = debtToCoverETH.toString()/1e18 * 0.08; // 8% at least premium.
       const estimatedGasLimit = 1300000;
-      const estimatedGasPrice = gasPrice.mul(405).div(100).toString(); // increase 205%
-      const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e18);
+      let estimatedGasPrice = gasPrice.mul(405).div(100).toString(); // increase 205%
 
       const { data } = await getPendingPoolGasData();
       const maxPendingGas = JSON.parse(data)[0][0];
 
+      const slippage = 0.97;
+      const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
+
+      if (maxPendingGas > estimatedGasPrice) {
+        estimatedGasPrice = (maxPendingGas * 1e9).toString();
+      }
+
+      if ((estimatedGasPrice/1e9) > maximumAVAXavailable) {
+        estimatedGasPrice = maximumAVAXavailable;                
+      }
+
+      const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e18);
+
       console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
       console.log(`rewards: ${rewards}`);
-      console.log(`finalCost: ${finalCost}`);
-
       console.log(`maxPendingGas: ${maxPendingGas}`);
+      console.log(`finalCost: ${finalCost}`);
 
       if (rewards > finalCost && !LIQUIDATION_IN_PROCESS) {
         LIQUIDATION_IN_PROCESS = true;
