@@ -109,7 +109,7 @@ async function run() {
       const rewards = debtToCoverETH.toString()/1e18 * 0.08; // 8% at least premium.
       const estimatedGasLimit = 1300000;
       const estimatedGasPrice = gasPrice.mul(305).div(100).toString(); // increase 205%
-      const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE * 1e18);
+      const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e18);
 
       console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
       console.log(`rewards: ${rewards}`);
