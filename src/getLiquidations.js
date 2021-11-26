@@ -118,12 +118,16 @@ async function run() {
       const slippage = 0.97;
       const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
 
-      if (maxPendingGas > estimatedGasPrice) {
+      console.log(`${maxPendingGas} > ${estimatedGasPrice/1e9}`);
+
+      if (maxPendingGas > (estimatedGasPrice/1e9)) {
         estimatedGasPrice = (maxPendingGas * 1e9).toString();
       }
 
       if ((estimatedGasPrice/1e9) > maximumAVAXavailable) {
-        estimatedGasPrice = maximumAVAXavailable;                
+        estimatedGasPrice = (maximumAVAXavailable * 1e9).toString();
+        const index = estimatedGasPrice.indexOf(".");
+        estimatedGasPrice = estimatedGasPrice.slice(0, index);
       }
 
       const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e18);
