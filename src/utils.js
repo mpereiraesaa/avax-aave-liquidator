@@ -1,6 +1,7 @@
 const path = require('path');
 const { BigNumber } = require('bignumber.js');
 const Database = require('better-sqlite3');
+const fetch = require("node-fetch");
 
 BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
@@ -21,6 +22,17 @@ const GET_BALANCES = `
   INNER JOIN TOKEN_INFO ti ON (LOWER(ti.token) = LOWER(b.token))
   WHERE b.balance > 0
 `;
+
+async function getPendingPoolGasData() {
+  const url = "https://gavax.blockscan.com/gasapi.ashx?apikey=key&method=pendingpooltxgweidata";
+  const data = await fetch(url, {
+    "headers": {},
+    "body": null,
+    "method": "GET"
+  });
+  const response = await data.json();
+  return !!response.result ? response.result : {};
+}
 
 function getDBConnection() {
   const dbPath = path.resolve(__dirname, `../database/${PROTOCOL}_${NETWORK}.sqlite`);
@@ -55,6 +67,7 @@ async function waitForTransactions() {
 }
 
 module.exports = {
+  getPendingPoolGasData,
   getDBConnection,
   waitForTransactions,
   GET_TOKENS,

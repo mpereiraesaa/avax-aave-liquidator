@@ -11,6 +11,7 @@ const { calculateHealthFactorFromBalances, pow10, LTV_PRECISION } = require("@aa
 const { getAccounts } = require("./liquidations");
 const { sync } = require('./synchronization');
 const addresses = require("./addresses/avax.json");
+const { getPendingPoolGasData } = require("./utils");
 
 // BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
@@ -108,12 +109,17 @@ async function run() {
 
       const rewards = debtToCoverETH.toString()/1e18 * 0.08; // 8% at least premium.
       const estimatedGasLimit = 1300000;
-      const estimatedGasPrice = gasPrice.mul(305).div(100).toString(); // increase 205%
+      const estimatedGasPrice = gasPrice.mul(405).div(100).toString(); // increase 205%
       const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e18);
+
+      const { data } = await getPendingPoolGasData();
+      const maxPendingGas = JSON.parse(data)[0][0];
 
       console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
       console.log(`rewards: ${rewards}`);
       console.log(`finalCost: ${finalCost}`);
+
+      console.log(`maxPendingGas: ${maxPendingGas}`);
 
       if (rewards > finalCost && !LIQUIDATION_IN_PROCESS) {
         LIQUIDATION_IN_PROCESS = true;
