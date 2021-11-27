@@ -135,6 +135,8 @@ async function run() {
 
       const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e18);
 
+      console.log(`AVAX_PRICE: ${AVAX_PRICE}`);
+
       console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
       console.log(`rewards: ${rewards}`);
       console.log(`maxPendingGas: ${maxPendingGas}`);
