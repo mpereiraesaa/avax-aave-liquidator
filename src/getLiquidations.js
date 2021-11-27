@@ -121,7 +121,7 @@ async function run() {
       console.log(`${maxPendingGas} > ${estimatedGasPrice/1e9}`);
 
       if (maxPendingGas > (estimatedGasPrice/1e9)) {
-        estimatedGasPrice = (maxPendingGas * 1e9).toString();
+        estimatedGasPrice = ((maxPendingGas * 1e9)*1.02).toString();
       }
 
       if ((estimatedGasPrice/1e9) > maximumAVAXavailable) {
