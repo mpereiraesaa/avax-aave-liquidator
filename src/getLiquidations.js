@@ -83,9 +83,14 @@ async function run() {
         }
       });
 
+      console.log(`maxCollateralAmountAvailable: ${maxCollateralAmountAvailable}`);
+
       debt.forEach((asset) => {
-        let maxLiquidatableDebtETH = asset.totalDebtInETH.multipliedBy(LIQUIDATION_CLOSE_FACTOR_PERCENT).dividedBy(pow10(LTV_PRECISION))
-          .times(liquidationBonus).div(pow10(LTV_PRECISION));
+        let maxLiquidatableDebtETH = asset.totalDebtInETH
+          .multipliedBy(LIQUIDATION_CLOSE_FACTOR_PERCENT)
+          .dividedToIntegerBy(pow10(LTV_PRECISION))
+          .times(liquidationBonus)
+          .dividedToIntegerBy(pow10(LTV_PRECISION));
 
         console.log(asset);
 
