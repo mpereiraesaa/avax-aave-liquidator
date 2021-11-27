@@ -118,8 +118,6 @@ async function run() {
       const slippage = 0.97;
       const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
 
-      console.log(`${maxPendingGas} > ${estimatedGasPrice/1e9}`);
-
       if (maxPendingGas > (estimatedGasPrice/1e9)) {
         estimatedGasPrice = ((maxPendingGas * 1e9)*1.02).toString();
       }
