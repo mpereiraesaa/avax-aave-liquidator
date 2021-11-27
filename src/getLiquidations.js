@@ -101,7 +101,7 @@ async function run() {
           selectedDebtAsset = asset.reserve;
 
           debtToCover = debtToCoverETH.times(pow10(asset.decimals))
-            .div(asset.assetPrice)
+            .div(asset.assetPrice * 1e10)
             .div(liquidationBonus)
             .times(pow10(LTV_PRECISION)).toString()
         }
