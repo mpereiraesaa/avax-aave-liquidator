@@ -92,8 +92,6 @@ async function run() {
           .times(liquidationBonus)
           .dividedToIntegerBy(pow10(LTV_PRECISION));
 
-        console.log(asset);
-
         if (maxLiquidatableDebtETH.gt(maxCollateralAmountAvailable)) {
           maxLiquidatableDebtETH = maxCollateralAmountAvailable;
         }
