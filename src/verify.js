@@ -16,7 +16,7 @@ async function run() {
 
   const balanceData = db.prepare(GET_BALANCES).all();
 
-  const { timestamp } = await provider.getBlock('latest');
+  const { timestamp, number: blockNumber } = await provider.getBlock('latest');
 
   for (let i = 0; i < balanceData.length; i++) {
     const data = balanceData[i];
@@ -27,10 +27,10 @@ async function run() {
     if (data.interest_rate_mode === 0) token = new ethers.Contract(data.token, aTokenABI, provider);
     if (data.interest_rate_mode === 2) token = new ethers.Contract(data.token, variableDebtABI, provider);
 
-    const balanceOnChain = await token.balanceOf(data.user);
+    const balanceOnChain = await token.balanceOf(data.user, { blockTag: blockNumber});
     const diff = Math.abs(balanceOnChain.toString() - calculatedBalance.toString(10));
 
-    if (diff > 6) {
+    if (diff > 8) {
       console.log(`index: ${i} - user: ${data.user} with token: ${data.token} type ${data.interest_rate_mode} mismatch, due to ${balanceOnChain.toString()} not equal to ${calculatedBalance.toString(10)} - base off-chain balance: ${data.balance}`);
     } else {
       console.log(`diff:${diff} is good for index:${i}`);
