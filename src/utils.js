@@ -7,7 +7,7 @@ BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
 let db;
 
-const PROTOCOL = "BLIZZ";
+const PROTOCOL = "AAVE";
 const NETWORK = "AVALANCHE";
 
 const GET_TOKENS = `SELECT * FROM TOKEN_INFO`;

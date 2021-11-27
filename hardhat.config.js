@@ -69,7 +69,7 @@ module.exports= {
     },
     mainnet: {
       url: 'https://api.avax.network/ext/bc/C/rpc',
-      // gasPrice: 25000000000,
+      gasPrice: 35100000000,
       chainId: 43114,
       accounts: {mnemonic: process.env.MNEMONIC},
     }

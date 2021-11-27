@@ -5,7 +5,7 @@ const { syncDebt } = require('./syncDebt');
 
 const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
 
-const DEPLOY_BLOCK = 6628717;
+const DEPLOY_BLOCK = 4606878;
 
 async function syncState(iterations = 1) {
   const db = getDBConnection();

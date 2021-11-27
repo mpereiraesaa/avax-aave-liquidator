@@ -11,10 +11,7 @@ import {SafeMath} from "./Libraries.sol";
 contract Liquidator is Ownable {
     using SafeMath for uint256;
 
-    address internal AAVE_LP_ADDRESS =
-        0x4F01AeD16D97E3aB5ab2B501154DC9bb0F1A5A2C;
-    address internal BLIZZ_LP_ADDRESS =
-        0x70BbE4A294878a14CB3CDD9315f5EB490e346163;
+    address internal AAVE_LP_ADDRESS = 0x4F01AeD16D97E3aB5ab2B501154DC9bb0F1A5A2C;
     address internal ROUTER = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4; // traderjoe
 
     receive() external payable {}
@@ -63,14 +60,14 @@ contract Liquidator is Ownable {
         address initiator,
         bytes calldata params
     ) external returns (bool) {
-        ILendingPool lendingPool = ILendingPool(BLIZZ_LP_ADDRESS);
+        ILendingPool lendingPool = ILendingPool(AAVE_LP_ADDRESS);
 
         (address borrower, address collateral) = abi.decode(
             params,
             (address, address)
         );
 
-        IERC20(assets[0]).approve(BLIZZ_LP_ADDRESS, amounts[0]);
+        IERC20(assets[0]).approve(AAVE_LP_ADDRESS, amounts[0]);
         lendingPool.liquidationCall(
             collateral,
             assets[0],
