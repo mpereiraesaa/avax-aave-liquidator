@@ -43,7 +43,7 @@ async function getAccounts(timestamp) {
     const tokenUnit = 10**decimals;
 
     if (mode === 0) {
-      const liquidityBalanceETH = new BigNumber(assetPrice).times(calculatedBalance).div(tokenUnit);
+      const liquidityBalanceETH = new BigNumber(assetPrice * 1e10).times(calculatedBalance).div(tokenUnit);
 
       accountAssets[user]['totalCollateralInETH'] = accountAssets[user]['totalCollateralInETH'].plus(liquidityBalanceETH);
       accountAssets[user]['avgLtv'] = accountAssets[user]['avgLtv'].plus(liquidityBalanceETH.times(ltv));
@@ -54,7 +54,7 @@ async function getAccounts(timestamp) {
 
     if (mode === 2) {
       const totalDebtInETH = accountAssets[user]['totalDebtInETH'].plus(
-        new BigNumber(assetPrice).times(calculatedBalance).div(tokenUnit)
+        new BigNumber(assetPrice * 1e10).times(calculatedBalance).div(tokenUnit)
       );
       accountAssets[user]['totalDebtInETH'] = totalDebtInETH;
       accountAssets[user].debt.push({ reserve, totalDebtInETH, calculatedBalance, assetPrice, decimals });

@@ -133,7 +133,7 @@ async function run() {
         estimatedGasPrice = estimatedGasPrice.slice(0, index);
       }
 
-      const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e18);
+      const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e8);
 
       console.log(`AVAX_PRICE: ${AVAX_PRICE}`);
 
