@@ -87,6 +87,8 @@ async function run() {
         let maxLiquidatableDebtETH = asset.totalDebtInETH.multipliedBy(LIQUIDATION_CLOSE_FACTOR_PERCENT).dividedBy(pow10(LTV_PRECISION))
           .times(liquidationBonus).div(pow10(LTV_PRECISION));
 
+        console.log(asset);
+
         if (maxLiquidatableDebtETH.gt(maxCollateralAmountAvailable)) {
           maxLiquidatableDebtETH = maxCollateralAmountAvailable;
         }
