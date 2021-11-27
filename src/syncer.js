@@ -6,7 +6,7 @@ createTables();
 const { sync } = require('./synchronization');
 
 async function run() {
-  await sync(500);
+  await sync(1000);
 }
 
 run();
