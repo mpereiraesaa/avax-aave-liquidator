@@ -120,6 +120,9 @@ async function run() {
       const estimatedGasLimit = 1300000;
       let estimatedGasPrice = gasPrice.mul(405).div(100).toString(); // increase 205%
 
+      const slippage = 0.97;
+      const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
+
       if (!maxPendingGas || (!!maxPendingGasAtBlock && maxPendingGasAtBlock !== blockNumber)) {
         const { data: gasData } = await getPendingPoolGasData();
         maxPendingGas = JSON.parse(gasData)[0][0];
@@ -127,17 +130,8 @@ async function run() {
         console.log(`Found pending gas: ${maxPendingGas} at block ${maxPendingGasAtBlock}`);
       }
 
-      const slippage = 0.97;
-      const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
-
       if (maxPendingGas > (estimatedGasPrice/1e9)) {
         estimatedGasPrice = ((maxPendingGas * 1e9)*1.02).toString();
-      }
-
-      if ((estimatedGasPrice/1e9) > maximumAVAXavailable) {
-        estimatedGasPrice = (maximumAVAXavailable * 1e9).toString();
-        const index = estimatedGasPrice.indexOf(".");
-        estimatedGasPrice = estimatedGasPrice.slice(0, index);
       }
 
       const BASE_nAVAX = 395;
@@ -148,8 +142,29 @@ async function run() {
         estimatedGasPrice = estimatedGasPrice.slice(0, index);
       }
 
+      let tip = (rewards * 0.11); // 11%
+
+      if (rewards > 900.0) {
+        tip = tip / (AVAX_PRICE / 1e8);
+        tip = tip / BASE_GAS_LIMIT;
+        tip = (tip * 1e9).toString();
+        const index = tip.indexOf(".") > 0 ? tip.indexOf(".") : tip.length;
+        tip = tip.slice(0, index);
+
+        if ((tip/1e9) > (estimatedGasPrice/1e9)) {
+          estimatedGasPrice = tip;
+        }
+      }
+
+      if ((estimatedGasPrice/1e9) > maximumAVAXavailable) {
+        estimatedGasPrice = (maximumAVAXavailable * 1e9).toString();
+        const index = estimatedGasPrice.indexOf(".");
+        estimatedGasPrice = estimatedGasPrice.slice(0, index);
+      }
+
       const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e8);
 
+      console.log(`possible tip: ${tip/1e9}`);
       console.log(`maximumAVAXavailable: ${maximumAVAXavailable}`);
       console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
       console.log(`rewards: ${rewards}`);
