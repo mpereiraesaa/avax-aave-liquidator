@@ -119,7 +119,7 @@ async function run() {
       const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
 
       if (!maxPendingGas || (!!maxPendingGasAtBlock && maxPendingGasAtBlock !== blockNumber)) {
-        const { gasData } = await getPendingPoolGasData();
+        const { data: gasData } = await getPendingPoolGasData();
         maxPendingGas = JSON.parse(gasData)[0][0];
         maxPendingGasAtBlock = blockNumber;
         console.log(`Found pending gas: ${maxPendingGas} at block ${maxPendingGasAtBlock}`);
