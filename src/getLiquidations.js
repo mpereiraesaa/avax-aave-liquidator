@@ -42,6 +42,8 @@ async function run() {
     provider.getBalance(mainAccount.address),
   ]);
 
+  const { gasData } = await getPendingPoolGasData();
+
   for (acc of Object.keys(accounts)) {
   // Object.keys(accounts).forEach(async (acc) => {
     const {
@@ -117,8 +119,7 @@ async function run() {
       const estimatedGasLimit = 1300000;
       let estimatedGasPrice = gasPrice.mul(405).div(100).toString(); // increase 205%
 
-      const { data } = await getPendingPoolGasData();
-      const maxPendingGas = JSON.parse(data)[0][0];
+      const maxPendingGas = JSON.parse(gasData)[0][0];
 
       const slippage = 0.97;
       const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
@@ -133,10 +134,17 @@ async function run() {
         estimatedGasPrice = estimatedGasPrice.slice(0, index);
       }
 
+      const BASE_nAVAX = 395;
+
+      if ((estimatedGasPrice/1e9) < BASE_nAVAX) {
+        estimatedGasPrice = ((((Math.random()*1e-1) + 1 ) * BASE_nAVAX) * 1e9).toString();
+        const index = estimatedGasPrice.indexOf(".");
+        estimatedGasPrice = estimatedGasPrice.slice(0, index);
+      }
+
       const finalCost = ((estimatedGasPrice * estimatedGasLimit) / 1e18) * (AVAX_PRICE / 1e8);
 
-      console.log(`AVAX_PRICE: ${AVAX_PRICE}`);
-
+      console.log(`maximumAVAXavailable: ${maximumAVAXavailable}`);
       console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
       console.log(`rewards: ${rewards}`);
       console.log(`maxPendingGas: ${maxPendingGas}`);
