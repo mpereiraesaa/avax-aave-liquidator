@@ -121,7 +121,7 @@ async function run() {
       let estimatedGasPrice = gasPrice.mul(405).div(100).toString(); // increase 205%
 
       if (!maxPendingGas || (!!maxPendingGasAtBlock && maxPendingGasAtBlock !== blockNumber)) {
-        const { gasData } = await getPendingPoolGasData();
+        const { data: gasData } = await getPendingPoolGasData();
         maxPendingGas = JSON.parse(gasData)[0][0];
         maxPendingGasAtBlock = blockNumber;
         console.log(`Found pending gas: ${maxPendingGas} at block ${maxPendingGasAtBlock}`);
