@@ -1,15 +1,12 @@
 global.currentConfiguration = require("./configuration.json");
 
-const ethers = require('ethers');
 const { BigNumber } = require("bignumber.js");
 const { calculateBalance } = require("./functions");
 const { getDBConnection, GET_BALANCES } = require('./utils');
 
 // BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
-const provider = new ethers.providers.JsonRpcProvider(currentConfiguration.url);
-
-async function getAccounts(timestamp) {
+function getAccounts(timestamp) {
   const db = getDBConnection();
 
   const balanceData = db.prepare(GET_BALANCES).all();
