@@ -34,18 +34,14 @@ const WRAPPED_AVAX = "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7";
 async function run() {
   const oracle = new ethers.Contract(addresses.AaveOracle, PriceOracleGetterABI, provider);
 
-  const [gasPrice, AVAX_PRICE, AVAX_BALANCE, { timestamp, number: blockNumber },{ data: gasData }] = await Promise.all([
+  const [gasPrice, AVAX_PRICE, AVAX_BALANCE, { timestamp, number: blockNumber }] = await Promise.all([
     provider.getGasPrice(),
     oracle.getAssetPrice(WRAPPED_AVAX),
     provider.getBalance(mainAccount.address),
     provider.getBlock('latest'),
-    getPendingPoolGasData(),
   ]);
 
   const accounts = getAccounts(timestamp);
-
-  let maxPendingGas;
-  let maxPendingGasAtBlock;
 
   for (acc of Object.keys(accounts)) {
   // Object.keys(accounts).forEach(async (acc) => {
@@ -121,18 +117,7 @@ async function run() {
 
       const slippage = 0.97;
       const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
-
-      if (!maxPendingGas || (!!maxPendingGasAtBlock && maxPendingGasAtBlock !== blockNumber)) {
-        maxPendingGas = JSON.parse(gasData)[0][0];
-        maxPendingGasAtBlock = blockNumber;
-        console.log(`Found pending gas: ${maxPendingGas} at block ${maxPendingGasAtBlock}`);
-      }
-
-      if (maxPendingGas > (estimatedGasPrice/1e9)) {
-        estimatedGasPrice = ((maxPendingGas * 1e9)*1.02).toString();
-      }
-
-      const BASE_nAVAX = 395;
+      const BASE_nAVAX = 495;
 
       if ((estimatedGasPrice/1e9) < BASE_nAVAX) {
         estimatedGasPrice = ((((Math.random()*1e-1) + 1 ) * BASE_nAVAX) * 1e9).toString();
@@ -166,7 +151,6 @@ async function run() {
       console.log(`maximumAVAXavailable: ${maximumAVAXavailable}`);
       console.log(`estimatedGasPrice: ${estimatedGasPrice / 1e9}`);
       console.log(`rewards: ${rewards}`);
-      console.log(`maxPendingGas: ${maxPendingGas}`);
       console.log(`finalCost: ${finalCost}`);
 
       if (rewards > finalCost && !LIQUIDATION_IN_PROCESS) {
