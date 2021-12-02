@@ -9,8 +9,10 @@ const { getDBConnection, GET_BALANCES } = require('./utils');
 function getAccounts(timestamp) {
   const db = getDBConnection();
 
+  console.time(`Query takes`);
   const balanceData = db.prepare(GET_BALANCES).all();
   const accountAssets = {};
+  console.timeEnd(`Query takes`);
 
   balanceData.forEach((data) => {
     const {
