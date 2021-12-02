@@ -32,15 +32,17 @@ const liquidator = new ethers.Contract(currentConfiguration.liquidator, Liquidat
 const WRAPPED_AVAX = "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7";
 
 async function run() {
-  const { timestamp, number: blockNumber } = await provider.getBlock('latest');
   const oracle = new ethers.Contract(addresses.AaveOracle, PriceOracleGetterABI, provider);
 
-  const [accounts, gasPrice, AVAX_PRICE, AVAX_BALANCE] = await Promise.all([
-    getAccounts(timestamp),
+  const [gasPrice, AVAX_PRICE, AVAX_BALANCE, { timestamp, number: blockNumber },{ data: gasData }] = await Promise.all([
     provider.getGasPrice(),
     oracle.getAssetPrice(WRAPPED_AVAX),
     provider.getBalance(mainAccount.address),
+    provider.getBlock('latest'),
+    getPendingPoolGasData(),
   ]);
+
+  const accounts = getAccounts(timestamp);
 
   let maxPendingGas;
   let maxPendingGasAtBlock;
@@ -121,7 +123,6 @@ async function run() {
       const maximumAVAXavailable = (((AVAX_BALANCE.toString() / 1e18) / 2000000) * 1e9) * slippage;
 
       if (!maxPendingGas || (!!maxPendingGasAtBlock && maxPendingGasAtBlock !== blockNumber)) {
-        const { data: gasData } = await getPendingPoolGasData();
         maxPendingGas = JSON.parse(gasData)[0][0];
         maxPendingGasAtBlock = blockNumber;
         console.log(`Found pending gas: ${maxPendingGas} at block ${maxPendingGasAtBlock}`);
