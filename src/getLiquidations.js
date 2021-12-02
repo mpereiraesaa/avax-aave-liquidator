@@ -56,7 +56,6 @@ async function run() {
       debt
     } = accounts[acc];
 
-    const finalAvgLtv = totalCollateralInETH.gt(0) ? avgLtv.div(totalCollateralInETH) : 0;
     const finalAvgLiquidationThreshold = totalCollateralInETH.gt(0) ? avgLiquidationThreshold.div(totalCollateralInETH) : 0;
     const healthFactor = calculateHealthFactorFromBalances(
       totalCollateralInETH,
@@ -70,8 +69,6 @@ async function run() {
       let collateralAsset;
       let maxCollateralAmountAvailable = new BigNumber(0);
       let liquidationBonus;
-      let collateralAssetPrice;
-      let collateralDecimals;
       let selectedDebtAsset;
       let debtToCoverETH = new BigNumber(0);
       let debtToCover = new BigNumber(0);
@@ -182,6 +179,9 @@ async function run() {
         );
         tx.gasLimit = 2000000; // 2M
         tx.gasPrice = estimatedGasPrice;
+        tx.type = 0;
+        tx.maxFeePerGas = null;
+        tx.maxPriorityFeePerGas = null;
 
         console.log("Liquidating account...");
         const txSent = await mainAccount.sendTransaction(tx);
@@ -209,7 +209,9 @@ provider.on('block', async (blockNumber) => {
   console.timeEnd(`Synchronization`);
 
   try {
+    console.time(`Looping accounts`);
     await run();
+    console.timeEnd(`Looping accounts`);
   } catch (err) {
     console.log(err);
     FAILED_TRANSACTIONS += 1;
