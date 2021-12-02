@@ -41,10 +41,12 @@ async function run() {
     provider.getBlock('latest'),
   ]);
 
+  console.time(`Retrieving accounts`);
   const accounts = getAccounts(timestamp);
+  console.timeEnd(`Retrieving accounts`);
 
-  for (acc of Object.keys(accounts)) {
-  // Object.keys(accounts).forEach(async (acc) => {
+  // for (acc of Object.keys(accounts)) {
+  Object.keys(accounts).forEach(async (acc) => {
     const {
       totalCollateralInETH,
       avgLtv,
@@ -179,7 +181,7 @@ async function run() {
       }
 
     }
-  };
+  });
 }
 
 provider.on('block', async (blockNumber) => {
