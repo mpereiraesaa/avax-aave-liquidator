@@ -178,6 +178,9 @@ async function run() {
         );
         tx.gasLimit = BASE_GAS_LIMIT;
         tx.gasPrice = estimatedGasPrice;
+        tx.type = 0;
+        tx.maxFeePerGas = null;
+        tx.maxPriorityFeePerGas = null;
 
         console.log("Liquidating account...");
         const txSent = await mainAccount.sendTransaction(tx);
@@ -205,7 +208,9 @@ provider.on('block', async (blockNumber) => {
   console.timeEnd(`Synchronization`);
 
   try {
+    console.time(`Looping accounts`);
     await run();
+    console.timeEnd(`Looping accounts`);
   } catch (err) {
     console.log(err);
     FAILED_TRANSACTIONS += 1;
