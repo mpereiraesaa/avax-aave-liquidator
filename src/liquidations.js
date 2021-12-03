@@ -14,6 +14,8 @@ function getAccounts(timestamp) {
   const accountAssets = {};
   console.timeEnd(`Query takes`);
 
+  console.time(`Calculating.`);
+
   balanceData.forEach((data) => {
     const {
       ltv,
@@ -59,6 +61,8 @@ function getAccounts(timestamp) {
       accountAssets[user].debt.push({ reserve, totalDebtInETH, calculatedBalance, assetPrice, decimals });
     }
   });
+
+  console.timeEnd(`Calculating.`);
 
   return accountAssets;
 }
