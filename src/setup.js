@@ -77,10 +77,10 @@ async function run() {
     `);
 
     stmt1.run(
-      reserve,
-      aTokenAddress,
-      stableDebtTokenAddress,
-      variableDebtTokenAddress,
+      reserve.toLowerCase(),
+      aTokenAddress.toLowerCase(),
+      stableDebtTokenAddress.toLowerCase(),
+      variableDebtTokenAddress.toLowerCase(),
       ltv,
       liquidationThreshold,
       liquidationsBonus,

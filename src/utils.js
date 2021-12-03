@@ -18,8 +18,8 @@ const GET_BALANCES = `
   rd.reserve, b.token, b.user, b.balance, ti.interest_rate_mode, rd.liquidity_index, rd.current_liquidity_rate, rd.variable_borrow_index, rd.current_variable_borrow_rate, rd.liquidation_threshold, rd.liquidation_bonus, rd.decimals, rd.last_update, rd.ltv, rd.reserve_factor, rd.asset_price
   FROM BALANCES b
   INNER JOIN RESERVE_DATA rd
-  ON (LOWER(b.token) = LOWER(rd.atoken_address) OR LOWER(b.token) = LOWER(rd.stable_debt_token_address) OR LOWER(b.token) = LOWER(rd.variable_debt_token_address))
-  INNER JOIN TOKEN_INFO ti ON (LOWER(ti.token) = LOWER(b.token))
+  ON (b.token = rd.atoken_address OR b.token = rd.stable_debt_token_address OR b.token = rd.variable_debt_token_address)
+  INNER JOIN TOKEN_INFO ti ON ti.token = b.token
   WHERE b.balance > 0
 `;
 

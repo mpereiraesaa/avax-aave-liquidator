@@ -6,6 +6,8 @@ const { getDBConnection, GET_BALANCES } = require('./utils');
 
 // BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
+const ZERO = new BigNumber(0);
+
 function getAccounts(timestamp) {
   const db = getDBConnection();
 
@@ -16,7 +18,9 @@ function getAccounts(timestamp) {
 
   console.time(`Calculating.`);
 
-  balanceData.forEach((data) => {
+  for(let i = balanceData.length-1; i>=0; i--) {
+    const data = balanceData[i];
+  // balanceData.forEach((data) => {
     const {
       ltv,
       liquidation_threshold: liquidationThreshold,
@@ -30,10 +34,10 @@ function getAccounts(timestamp) {
 
     if (!accountAssets[user]) {
       accountAssets[user] = {
-        totalCollateralInETH: new BigNumber(0),
-        avgLtv: new BigNumber(0),
-        avgLiquidationThreshold: new BigNumber(0),
-        totalDebtInETH: new BigNumber(0),
+        totalCollateralInETH: ZERO,
+        avgLtv: ZERO,
+        avgLiquidationThreshold: ZERO,
+        totalDebtInETH: ZERO,
         healthFactor: '',
         collateral: [],
         debt: []
@@ -43,7 +47,7 @@ function getAccounts(timestamp) {
     const calculatedBalance = calculateBalance(data, timestamp);
     const tokenUnit = 10**decimals;
 
-    if (mode === 0) {
+    if (mode == 0) {
       const liquidityBalanceETH = new BigNumber(assetPrice * 1e10).times(calculatedBalance).div(tokenUnit);
 
       accountAssets[user]['totalCollateralInETH'] = accountAssets[user]['totalCollateralInETH'].plus(liquidityBalanceETH);
@@ -53,14 +57,14 @@ function getAccounts(timestamp) {
       accountAssets[user].collateral.push({ reserve, liquidityBalanceETH, liquidationBonus, assetPrice, decimals });
     }
 
-    if (mode === 2) {
+    if (mode == 2) {
       const totalDebtInETH = accountAssets[user]['totalDebtInETH'].plus(
         new BigNumber(assetPrice * 1e10).times(calculatedBalance).div(tokenUnit)
       );
       accountAssets[user]['totalDebtInETH'] = totalDebtInETH;
       accountAssets[user].debt.push({ reserve, totalDebtInETH, calculatedBalance, assetPrice, decimals });
     }
-  });
+  };
 
   console.timeEnd(`Calculating.`);
 
